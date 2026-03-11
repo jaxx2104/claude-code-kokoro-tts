@@ -1,6 +1,14 @@
 #!/bin/bash
 # Claude Code TTS Hook - Reads Claude's responses using kokoro-tts
 
+# Ensure uv is available in non-interactive bash
+# Set KOKORO_UV_BIN in ~/.claude/settings.json env to override (e.g. "/path/to/uv")
+if [ -n "$KOKORO_UV_BIN" ]; then
+  export PATH="$(dirname "$KOKORO_UV_BIN"):$PATH"
+else
+  export PATH="$HOME/.local/share/mise/shims:$PATH"
+fi
+
 # Voice configuration - can be set via env vars in ~/.claude/settings.json
 VOICE="${KOKORO_VOICE:-af_sky}"
 SPEED="${KOKORO_SPEED:-1.0}"

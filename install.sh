@@ -276,7 +276,8 @@ else
         .hooks.Stop = [{"hooks": [{"type": "command", "command": "bash ~/.claude/hooks/tts-stop-hook.sh", "timeout": 10}]}] |
         .hooks.SessionEnd = [{"hooks": [{"type": "command", "command": "bash ~/.claude/hooks/tts-session-end-hook.sh", "timeout": 5}]}] |
         .env.KOKORO_VOICE //= "af_sky" |
-        .env.KOKORO_LANG //= ""' \
+        .env.KOKORO_LANG //= "" |
+        .env.KOKORO_UV_BIN //= ""' \
         "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
 
     echo -e "${GREEN}OK${NC} Updated existing settings.json with TTS hooks and KOKORO_VOICE"

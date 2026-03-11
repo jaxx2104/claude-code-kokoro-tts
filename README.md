@@ -39,6 +39,14 @@ Set `KOKORO_VOICE` in `~/.claude/settings.json`. Language is auto-detected from 
 
 To override auto-detection, set `KOKORO_LANG` explicitly (e.g. `"en"`, `"ja"`, `"fr"`).
 
+### uv binary path
+
+If `uv` is not available via `~/.local/share/mise/shims` (e.g. projects without `uv` in `.tool-versions`), set `KOKORO_UV_BIN` to the absolute path of the `uv` binary:
+
+```json
+{ "env": { "KOKORO_UV_BIN": "/path/to/uv" } }
+```
+
 ## License
 
 ISC License -- see the [LICENSE](LICENSE) file for details.
