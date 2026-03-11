@@ -9,7 +9,7 @@ AUDIO_DUCK_SCRIPT="$HOME/.claude/scripts/audio-duck.sh"
 echo "[$(date)] TTS Interrupt hook triggered - stopping ongoing TTS playback" >> /tmp/kokoro-hook.log
 
 # Kill all running kokoro-tts processes and log the result
-if pkill -9 -f kokoro-tts-ja 2>/dev/null; then
+if pkill -9 -f kokoro-tts 2>/dev/null; then
   echo "[$(date)] Successfully stopped kokoro-tts process" >> /tmp/kokoro-hook.log
 
   # Restore audio volume since TTS was interrupted
