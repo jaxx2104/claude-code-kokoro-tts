@@ -213,7 +213,8 @@ if [ ! -f "$SETTINGS_FILE" ]; then
     cat > "$SETTINGS_FILE" << 'SETTINGS_EOF'
 {
   "env": {
-    "KOKORO_VOICE": "af_sky"
+    "KOKORO_VOICE": "af_sky",
+    "KOKORO_LANG": ""
   },
   "hooks": {
     "UserPromptSubmit": [
@@ -274,7 +275,8 @@ else
         .hooks.PreToolUse = [{"hooks": [{"type": "command", "command": "bash ~/.claude/hooks/tts-pretooluse-hook.sh", "timeout": 5}]}] |
         .hooks.Stop = [{"hooks": [{"type": "command", "command": "bash ~/.claude/hooks/tts-stop-hook.sh", "timeout": 10}]}] |
         .hooks.SessionEnd = [{"hooks": [{"type": "command", "command": "bash ~/.claude/hooks/tts-session-end-hook.sh", "timeout": 5}]}] |
-        .env.KOKORO_VOICE //= "af_sky"' \
+        .env.KOKORO_VOICE //= "af_sky" |
+        .env.KOKORO_LANG //= ""' \
         "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
 
     echo -e "${GREEN}OK${NC} Updated existing settings.json with TTS hooks and KOKORO_VOICE"

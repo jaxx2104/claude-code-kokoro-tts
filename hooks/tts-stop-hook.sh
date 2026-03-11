@@ -1,9 +1,10 @@
 #!/bin/bash
 # Claude Code TTS Hook - Reads Claude's responses using kokoro-tts
 
-# Voice configuration - can be set via KOKORO_VOICE env var in ~/.claude/settings.json
+# Voice configuration - can be set via env vars in ~/.claude/settings.json
 VOICE="${KOKORO_VOICE:-af_sky}"
 SPEED="${KOKORO_SPEED:-1.0}"
+LANG="${KOKORO_LANG:-}"  # Auto-detected from voice if empty
 
 # Audio ducking configuration - lowers Apple Music volume while TTS plays (like Google Maps in CarPlay)
 # macOS only - uses AppleScript to control Apple Music's internal volume
@@ -121,7 +122,7 @@ if [ -n "$claude_response" ]; then
 
   # Kill any existing TTS processes to prevent overlapping audio
   # This ensures the final response "wins" over any PreToolUse audio still playing
-  if pkill -9 -f kokoro-tts-ja 2>/dev/null; then
+  if pkill -9 -f kokoro-tts 2>/dev/null; then
     echo "[$(date)] Killed existing kokoro-tts process" >> /tmp/kokoro-hook.log
   fi
 
@@ -137,10 +138,35 @@ if [ -n "$claude_response" ]; then
     "$AUDIO_DUCK_SCRIPT" duck
   fi
 
-  # Run kokoro-tts-ja.py in background and capture PID for audio ducking restore
-  UV_NATIVE_TLS=1 uv run --with kokoro-onnx --with "misaki[ja]" --with sounddevice --with unidic-lite \
-    python "$HOME/.claude/scripts/kokoro-tts-ja.py" "$tmpfile" \
-    --voice "$VOICE" --speed "$SPEED" --model "$HOME/.local/share/kokoro-tts/kokoro-v1.0.onnx" \
+  # Build uv run command with language-appropriate dependencies
+  UV_DEPS="--with kokoro-onnx --with sounddevice"
+  # Determine effective language for dependency selection
+  EFFECTIVE_LANG="$LANG"
+  if [ -z "$EFFECTIVE_LANG" ]; then
+    # Auto-detect from voice prefix (j=ja, a/b=en, f=fr, g=de, e=es)
+    case "${VOICE:0:1}" in
+      j) EFFECTIVE_LANG="ja" ;;
+      a|b) EFFECTIVE_LANG="en" ;;
+      f) EFFECTIVE_LANG="fr" ;;
+      g) EFFECTIVE_LANG="de" ;;
+      e) EFFECTIVE_LANG="es" ;;
+      *) EFFECTIVE_LANG="en" ;;
+    esac
+  fi
+  if [ "$EFFECTIVE_LANG" = "ja" ]; then
+    UV_DEPS="$UV_DEPS --with misaki[ja] --with unidic-lite"
+  fi
+
+  # Build --lang argument
+  LANG_ARG=""
+  if [ -n "$LANG" ]; then
+    LANG_ARG="--lang $LANG"
+  fi
+
+  # Run kokoro-tts.py in background and capture PID for audio ducking restore
+  UV_NATIVE_TLS=1 uv run $UV_DEPS \
+    python "$HOME/.claude/scripts/kokoro-tts.py" "$tmpfile" \
+    --voice "$VOICE" --speed "$SPEED" $LANG_ARG --model "$HOME/.local/share/kokoro-tts/kokoro-v1.0.onnx" \
     --voices "$HOME/.local/share/kokoro-tts/voices-v1.0.bin" >>/tmp/kokoro-hook.log 2>&1 &
   TTS_PID=$!
   echo "[$(date)] Started kokoro-tts with PID: $TTS_PID" >> /tmp/kokoro-hook.log
