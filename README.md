@@ -39,19 +39,6 @@ Set `KOKORO_VOICE` in `~/.claude/settings.json`. Language is auto-detected from 
 
 To override auto-detection, set `KOKORO_LANG` explicitly (e.g. `"en"`, `"ja"`, `"fr"`).
 
-### Audio Ducking (macOS)
-
-```json
-{
-  "env": {
-    "AUDIO_DUCK_ENABLED": "true",
-    "DUCK_LEVEL": "5"
-  }
-}
-```
-
-Automatically lowers Apple Music volume to the specified percentage while TTS is playing.
-
 ## License
 
 ISC License -- see the [LICENSE](LICENSE) file for details.
