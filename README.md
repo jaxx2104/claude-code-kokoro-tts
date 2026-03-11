@@ -4,18 +4,6 @@ A fork of [~cg/claude-code-tts](https://git.sr.ht/~cg/claude-code-tts) with **mu
 
 This project adds multi-language text-to-speech capability using [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx), with [misaki\[ja\]](https://github.com/hexgrad/misaki) for proper Japanese kanji-to-phoneme conversion.
 
-## Supported Languages
-
-| Language | Code | Voice Prefix | Example Voices |
-|----------|------|-------------|----------------|
-| English  | `en` | `af_*`, `am_*`, `bf_*`, `bm_*` | `af_sky`, `af_bella`, `bm_george` |
-| Japanese | `ja` | `jf_*`, `jm_*` | `jf_alpha`, `jf_gongitsune`, `jm_kumo` |
-| French   | `fr` | `ff_*` | `ff_siwis` |
-| German   | `de` | `gf_*` | `gf_pilgrim` |
-| Spanish  | `es` | `ef_*`, `em_*` | `ef_dora`, `em_alex` |
-
-See [Kokoro VOICES.md](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md) for the full list (54 voices across 5 languages).
-
 ## Key Features
 
 - **Multi-language support** -- 5 languages with automatic language detection from voice name
@@ -28,9 +16,6 @@ See [Kokoro VOICES.md](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICE
 
 - [uv](https://astral.sh/uv) -- fast Python package manager
 - [Claude Code](https://claude.ai/code)
-- Model files (downloaded automatically by `install.sh`):
-  - `kokoro-v1.0.onnx` (~310 MB)
-  - `voices-v1.0.bin` (~25 MB)
 
 ## Installation
 
