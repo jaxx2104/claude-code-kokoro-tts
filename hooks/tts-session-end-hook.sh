@@ -13,7 +13,7 @@ reason=$(echo "$input" | jq -r '.reason')
 echo "[$(date)] SessionEnd hook triggered for session $session_id (reason: $reason)" >> /tmp/kokoro-hook.log
 
 # Kill any running kokoro-tts processes
-if pkill -9 kokoro-tts 2>/dev/null; then
+if pkill -9 -f kokoro-tts-ja 2>/dev/null; then
   echo "[$(date)] Killed running kokoro-tts processes" >> /tmp/kokoro-hook.log
 fi
 

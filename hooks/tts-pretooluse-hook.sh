@@ -3,11 +3,17 @@
 
 # Voice configuration - can be set via KOKORO_VOICE env var in ~/.claude/settings.json
 VOICE="${KOKORO_VOICE:-af_sky}"
+SPEED="${KOKORO_SPEED:-1.0}"
 
 # Audio ducking configuration - lowers Apple Music volume while TTS plays (like Google Maps in CarPlay)
 # macOS only - uses AppleScript to control Apple Music's internal volume
 AUDIO_DUCK_ENABLED="${AUDIO_DUCK_ENABLED:-true}"
-AUDIO_DUCK_SCRIPT="__CLAUDE_TTS_PROJECT_DIR__/scripts/audio-duck.sh"
+AUDIO_DUCK_SCRIPT="$HOME/.claude/scripts/audio-duck.sh"
+
+# Mute check - skip TTS if mute file exists (toggle via /tts-mute command)
+if [ -f /tmp/kokoro-mute ]; then
+  exit 0
+fi
 
 # Debug logging
 echo "[$(date)] PreToolUse TTS hook triggered" >> /tmp/kokoro-hook.log
@@ -123,8 +129,7 @@ if [ -n "$claude_response" ] && [ ${#claude_response} -gt 10 ]; then
   echo "[$(date)] Response length: ${#claude_response}, stripping markdown via strip_markdown.py" >> /tmp/kokoro-hook.log
 
   # Strip markdown formatting using mistune Python library
-  # Full absolute path ensures script works regardless of current working directory
-  claude_response=$(echo "$claude_response" | uv run --project "__CLAUDE_TTS_PROJECT_DIR__" python "__CLAUDE_TTS_PROJECT_DIR__/scripts/strip_markdown.py" 2>>/tmp/kokoro-hook.log || echo "$claude_response")
+  claude_response=$(echo "$claude_response" | uv run --with mistune python "$HOME/.claude/scripts/strip_markdown.py" 2>>/tmp/kokoro-hook.log || echo "$claude_response")
 
   echo "[$(date)] Response after markdown strip (length: ${#claude_response})" >> /tmp/kokoro-hook.log
 
@@ -140,7 +145,7 @@ if [ -n "$claude_response" ] && [ ${#claude_response} -gt 10 ]; then
 
   # Kill any existing TTS processes to prevent overlapping audio
   # This ensures new narration doesn't overlap with previous TTS still playing
-  if pkill -9 kokoro-tts 2>/dev/null; then
+  if pkill -9 -f kokoro-tts-ja 2>/dev/null; then
     echo "[$(date)] Killed existing kokoro-tts process" >> /tmp/kokoro-hook.log
   fi
 
@@ -150,8 +155,11 @@ if [ -n "$claude_response" ] && [ ${#claude_response} -gt 10 ]; then
     "$AUDIO_DUCK_SCRIPT" duck
   fi
 
-  # Run kokoro-tts in background and capture PID for audio ducking restore
-  kokoro-tts "$tmpfile" --voice "$VOICE" --stream --model "MODEL_PATH_PLACEHOLDER/kokoro-v1.0.onnx" --voices "MODEL_PATH_PLACEHOLDER/voices-v1.0.bin" >>/tmp/kokoro-hook.log 2>&1 &
+  # Run kokoro-tts-ja.py in background and capture PID for audio ducking restore
+  UV_NATIVE_TLS=1 uv run --with kokoro-onnx --with "misaki[ja]" --with sounddevice --with unidic-lite \
+    python "$HOME/.claude/scripts/kokoro-tts-ja.py" "$tmpfile" \
+    --voice "$VOICE" --speed "$SPEED" --model "$HOME/.local/share/kokoro-tts/kokoro-v1.0.onnx" \
+    --voices "$HOME/.local/share/kokoro-tts/voices-v1.0.bin" >>/tmp/kokoro-hook.log 2>&1 &
   TTS_PID=$!
   echo "[$(date)] Started kokoro-tts with PID: $TTS_PID" >> /tmp/kokoro-hook.log
 
