@@ -1,0 +1,19 @@
+# Model files
+*.onnx
+*.bin
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# uv
+uv.lock
+
+# OS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.log
