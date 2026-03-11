@@ -28,7 +28,7 @@ class PlainTextRenderer(mistune.HTMLRenderer):
         return text
 
     def codespan(self, text):
-        return ""  # Remove inline code
+        return text  # Keep inline code text for TTS
 
     def block_code(self, code, info=None):
         return ""  # Remove code blocks
