@@ -2,12 +2,12 @@
 
 A fork of [~cg/claude-code-tts](https://git.sr.ht/~cg/claude-code-tts) with **multi-language support**.
 
-This project adds multi-language text-to-speech capability using [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx), with [misaki\[ja\]](https://github.com/hexgrad/misaki) for proper Japanese kanji-to-phoneme conversion.
+This project adds multi-language text-to-speech capability using [kokoro](https://github.com/hexgrad/kokoro) (KPipeline), with [misaki\[ja\]](https://github.com/hexgrad/misaki) for proper Japanese kanji-to-phoneme conversion.
 
 ## Key Features
 
 - **Multi-language support** -- 5 languages with automatic language detection from voice name
-- **Japanese phonemization** via misaki\[ja\] -- handles kanji, hiragana, katakana correctly (kokoro-onnx's built-in espeak-ng reads kanji as "chinese letter")
+- **Japanese phonemization** via misaki\[ja\] -- handles kanji, hiragana, katakana correctly
 - **Speed control** -- adjustable speech rate via `--speed` flag
 - **Mute toggle** -- TTS mute/unmute via `/tts-mute` slash command
 - **Audio ducking** (macOS) -- automatically lowers music volume during TTS playback
@@ -25,7 +25,7 @@ cd claude-code-kokoro-tts
 ./install.sh
 ```
 
-The installer will download model files, set up hooks in `~/.claude/hooks/`, and configure Claude Code settings.
+The installer will set up hooks in `~/.claude/hooks/` and configure Claude Code settings. Model files are downloaded automatically via HuggingFace on first run.
 
 ## Configuration
 
@@ -46,6 +46,24 @@ If `uv` is not available via `~/.local/share/mise/shims` (e.g. projects without 
 ```json
 { "env": { "KOKORO_UV_BIN": "/path/to/uv" } }
 ```
+
+## Troubleshooting
+
+Debug log: `tail -f /tmp/kokoro-hook.log`
+
+| 症状 | 確認方法 |
+|---|---|
+| 音声が再生されない | `grep "hook triggered" /tmp/kokoro-hook.log \| tail -1` |
+| hookが実行されない | `jq '.hooks' ~/.claude/settings.json` / `chmod +x ~/.claude/hooks/tts-*.sh` |
+| 割り込みが効かない | `jq '.hooks.UserPromptSubmit' ~/.claude/settings.json` |
+| プロセスが残る | `pgrep -a kokoro-tts` → `pkill -9 -f kokoro-tts` |
+
+## Limitations
+
+- `uv`, `jq` がPATHに必要
+- 音声はローカルデバイスのみ (リモートセッション非対応)
+- テキストのみ読み上げ (ツール出力・コードブロックはスキップ)
+- 5000文字で切り詰め (`tts-stop-hook.sh` で変更可能)
 
 ## License
 
