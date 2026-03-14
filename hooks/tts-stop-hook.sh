@@ -19,14 +19,17 @@ if [ -f /tmp/kokoro-mute ]; then
   exit 0
 fi
 
+# Read stdin before backgrounding (stdin is not available in subshell)
+input=$(cat)
+
+# Run everything in background to avoid blocking Claude Code
+(
+
 # Debug logging
 echo "[$(date)] Kokoro TTS hook triggered" >> /tmp/kokoro-hook.log
 
 # Small delay to avoid race condition where transcript isn't fully written yet
 sleep 1
-
-# Read the hook input JSON from stdin
-input=$(cat)
 
 # Debug: Log the input
 echo "[$(date)] Hook input: $input" >> /tmp/kokoro-hook.log
@@ -140,14 +143,17 @@ if [ -n "$claude_response" ]; then
     LANG_ARG="--lang $LANG"
   fi
 
-  # Run kokoro-tts.py in background
+  # Run kokoro-tts.py
   UV_NATIVE_TLS=1 uv run $UV_DEPS \
     python "$HOME/.claude/scripts/kokoro-tts.py" "$tmpfile" \
-    --voice "$VOICE" --speed "$SPEED" $LANG_ARG >>/tmp/kokoro-hook.log 2>&1 &
-  echo "[$(date)] Started kokoro-tts with PID: $!" >> /tmp/kokoro-hook.log
+    --voice "$VOICE" --speed "$SPEED" $LANG_ARG >>/tmp/kokoro-hook.log 2>&1
+  echo "[$(date)] kokoro-tts finished" >> /tmp/kokoro-hook.log
 else
   echo "[$(date)] No response found" >> /tmp/kokoro-hook.log
 fi
 
-# Exit successfully (non-blocking)
+) </dev/null >/dev/null 2>&1 &
+disown
+
+# Exit immediately (non-blocking)
 exit 0

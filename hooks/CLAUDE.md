@@ -6,7 +6,7 @@ hookスクリプトを編集する際に必要な技術コンテキスト。
 
 各hookはstdinでJSONを受け取る。
 
-### Stop / UserPromptSubmit
+### Stop / UserPromptSubmit / PreToolUse
 
 ```json
 {
